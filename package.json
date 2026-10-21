@@ -1,0 +1,37 @@
+{
+  "name": "com.shannak.cascade-roll",
+  "version": "1.0.0",
+  "displayName": "CascadeRoll",
+  "description": "Cascading loot roll for any game: one Roll() call walks a weighted table tree (type -> item), with weights bent at roll time by your own modifiers (falloff, pity, gates) and hard rules (guaranteed drops). Pure C# core, optional ScriptableObject tables, every roll explains itself in a trace.",
+  "unity": "6000.0",
+  "license": "MIT",
+  "keywords": [
+    "loot",
+    "roll",
+    "drop-table",
+    "cascading",
+    "weighted-random",
+    "procedural"
+  ],
+  "author": {
+    "name": "Shannak",
+    "email": "shannak.ahmad96@gmail.com"
+  },
+  "samples": [
+    {
+      "displayName": "Basic Roll",
+      "description": "The plain cascade: Chest -> rarity (Common/Uncommon/Rare/Epic/Legendary by weight) -> item, no modifiers, no rules. Read this first.",
+      "path": "Samples~/BasicRoll"
+    },
+    {
+      "displayName": "Rarity Pity",
+      "description": "Middle step: Chain on rarity, real weights inside each tier, and one modifier that raises Epic/Legendary odds per dry chest.",
+      "path": "Samples~/RarityPity"
+    },
+    {
+      "displayName": "Advanced Loot Demo",
+      "description": "A ledger-driven falloff modifier (item and type), a guaranteed first drop, in-haul duplicate damping, and the trace printed to the console.",
+      "path": "Samples~/AdvancedLootDemo"
+    }
+  ]
+}
