@@ -35,6 +35,8 @@ namespace CascadeRoll.Samples {
     [SerializeField] private int seed = 1;
     [SerializeField] private int containers = 8;
     [SerializeField] private float pityPerChest = 2f;
+    [Tooltip("Rolls for the simulation printed after the chests; 0 skips it.")]
+    [SerializeField] private int simulateRolls = 10000;
 
     private void Start() {
       // Inside a tier, weights differ: Tuna 3 : Bandage 2 : Plank 1 = 50 % / 33 % / 17 %.
@@ -57,9 +59,22 @@ namespace CascadeRoll.Samples {
       for (int i = 0; i < containers; i++) {
         RollResult<string> haul = roller.Roll(chest, ledger, new SystemRandom(seed * 1000 + i));
         Debug.Log("Chest " + (i + 1) + " (pity +" + ledger.ChestsSinceEpic * pityPerChest + " %) → " + string.Join(", ", haul.Items) + "\n" + haul);
-        bool gotEpic = haul.Items.Exists(item => epic.Entries.Exists(e => e.Item == item) || legendary.Entries.Exists(e => e.Item == item));
-        ledger.ChestsSinceEpic = gotEpic ? 0 : ledger.ChestsSinceEpic + 1;
+        Settle(ledger, haul, epic, legendary);
       }
+
+      // Measured odds with the pity loop running: Epic + Legendary land above their written 7 + 3.
+      if (simulateRolls > 0) {
+        SimulationReport<string> report = RollSimulator.Run(roller, chest, new PityLedger(), simulateRolls, seed,
+          (l, haul) => Settle(l, haul, epic, legendary));
+        Debug.Log("Simulation (pity on)\n" + report);
+        Debug.Log("Simulation (pity off)\n" + RollSimulator.Run(new Roller<string, PityLedger>(), chest, new PityLedger(), simulateRolls, seed));
+      }
+    }
+
+    // After a chest: a top-tier drop resets the dry streak, anything else lengthens it.
+    private static void Settle(PityLedger ledger, RollResult<string> haul, RollTable<string> epic, RollTable<string> legendary) {
+      bool gotEpic = haul.Items.Exists(item => epic.Entries.Exists(e => e.Item == item) || legendary.Entries.Exists(e => e.Item == item));
+      ledger.ChestsSinceEpic = gotEpic ? 0 : ledger.ChestsSinceEpic + 1;
     }
   }
 }

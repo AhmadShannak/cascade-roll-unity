@@ -57,9 +57,19 @@ Debug.Log(haul);   // the trace
 
 **Weighted** (default). One die. Each entry's share is `weight / total`. Order does not matter. Use it for siblings with no order: item lists, Consumable / Weapon / Coin.
 
-**Chain.** Top down. Each weight is that entry's final percent of all picks; the roller rescales each check against what fell through, so 3 / 7 / 15 / 25 really land as 3 / 7 / 15 / 25. The last entry catches the rest. Use it for ordered tiers. Rarest first.
+**Chain.** Top down. Each weight is that entry's final percent of all picks. The last entry catches the rest. Use it for ordered tiers. Rarest first.
 
-Mix them freely: a Chain on rarity, Weighted inside each tier.
+A naive chain compounds: every step only sees what fell through the steps above, so the middle tiers come out thin and the last one fat. CascadeRoll rescales each check against what is still unclaimed (`target / remaining`), so the numbers you write are the numbers you get. Measured over 10 000 chests from the Basic Roll sample:
+
+| tier | written | naive chain | CascadeRoll |
+|---|---|---|---|
+| Legendary | 3 | 3.0 | 3.01 |
+| Epic | 7 | 6.8 | 7.12 |
+| Rare | 15 | 13.5 | 15.24 |
+| Uncommon | 25 | 19.2 | 24.96 |
+| Common | rest | 57.5 | 49.68 |
+
+Mix the modes freely: a Chain on rarity, Weighted inside each tier.
 
 ## Changing odds at roll time
 
@@ -88,6 +98,42 @@ public class FirstChestTelescope : IRollRule<string, Ledger> {
 ```
 
 Rules are dealt before the dice and count toward the table's picks.
+
+## Simulate
+
+A roll is deterministic, so odds are a loop away:
+
+```csharp
+SimulationReport<string> report = RollSimulator.Run(roller, chest, ledger, rolls: 10000,
+  afterRoll: (ctx, haul) => ctx.Record(haul));   // feed your ledger so pity and falloff simulate too
+Debug.Log(report);
+```
+
+```
+10000 rolls, 20000 items (2.00 per roll, min 2 max 2)
+by tag:
+  Common            49.68 %  9935
+  Uncommon          24.96 %  4991
+  Rare              15.24 %  3048
+  Epic               7.12 %  1424
+  Legendary          3.01 %  602
+by item:
+  Plank             16.82 %  3364
+  Tuna              16.64 %  3327
+  Bandage           16.22 %  3244
+  Fishing Pole      12.58 %  2515
+  ...
+```
+
+Run it with a modifier and the report shows what the modifier did. The Rarity Pity sample prints both:
+
+| tier | pity off | pity on |
+|---|---|---|
+| Legendary | 3.01 | 5.64 |
+| Epic | 7.12 | 10.90 |
+| Common | 49.68 | 43.31 |
+
+Every sample ends with a simulation (`simulateRolls` in the Inspector, 0 skips it), and every `RollTableAsset` has a **Simulate** button in its Inspector (base odds, no modifiers).
 
 ## Inspector tables
 

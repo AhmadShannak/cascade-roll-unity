@@ -1,6 +1,6 @@
 {
   "name": "com.shannak.cascade-roll",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "CascadeRoll",
   "description": "Cascading loot roll for any game: one Roll() call walks a weighted table tree (type -> item), with weights bent at roll time by your own modifiers (falloff, pity, gates) and hard rules (guaranteed drops). Pure C# core, optional ScriptableObject tables, every roll explains itself in a trace.",
   "unity": "6000.0",

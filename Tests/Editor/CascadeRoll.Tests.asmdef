@@ -4,6 +4,7 @@
   "references": [
     "CascadeRoll.Core",
     "CascadeRoll.Unity",
+    "CascadeRoll.Editor",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"
   ],

@@ -1,0 +1,19 @@
+{
+  "name": "CascadeRoll.Editor",
+  "rootNamespace": "CascadeRoll.Editor",
+  "references": [
+    "CascadeRoll.Core",
+    "CascadeRoll.Unity"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

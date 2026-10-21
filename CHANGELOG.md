@@ -3,6 +3,16 @@
 All notable changes to this package are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/); versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-10-21
+
+### Added
+- `RollSimulator.Run(roller, table, context, rolls, seed, afterRoll)` → `SimulationReport<T>`: share per item and per tag, items per roll, printable table; `afterRoll` feeds a ledger so pity and falloff simulate the way the game runs them.
+- **Simulate** button on every `RollTableAsset` Inspector (base odds, no modifiers).
+- Every sample ends with a simulation printout (`simulateRolls`, 0 skips); Rarity Pity prints pity on vs off.
+
+### Changed
+- README: compounding table (written vs naive chain vs CascadeRoll) and real simulation output.
+
 ## [1.0.0] - 2026-10-20
 
 ### Added

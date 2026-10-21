@@ -224,6 +224,30 @@ namespace CascadeRoll.Tests {
     }
 
     [Test]
+    public void SimulatorTalliesItemsAndTagsAndRunsAfterRoll() {
+      var roller = new Roller<string, Ledger>(new[] { new Falloff() });
+      var root = new RollTable<string>("Chest", 2, RollMode.Chain)
+        .Add(new RollTable<string>("Rare").Add("Spear", 1f), 20f, "Rare")
+        .Add(new RollTable<string>("Common").Add("Tuna", 3f).Add("Plank", 1f), 100f, "Common");
+      SimulationReport<string> plain = RollSimulator.Run(roller, root, new Ledger(), 5000);
+      Assert.AreEqual(5000, plain.Rolls);
+      Assert.AreEqual(10000, plain.ItemsDealt);
+      Assert.AreEqual(2, plain.MinPerRoll);
+      Assert.AreEqual(2, plain.MaxPerRoll);
+      Assert.AreEqual(0.20f, plain.TagShare("Rare"), 0.015f);
+      Assert.AreEqual(0.80f * 0.75f, plain.Share("Tuna"), 0.02f);
+      StringAssert.Contains("by tag:", plain.ToString());
+      // With the ledger fed back, falloff drags Tuna down toward Plank.
+      SimulationReport<string> fed = RollSimulator.Run(roller, root, new Ledger(), 5000, 0, (ledger, r) => {
+        foreach (string item in r.Items) {
+          ledger.Record(item, null);
+        }
+      });
+      Assert.Less(fed.Share("Tuna"), plain.Share("Tuna"));
+      Assert.Greater(fed.Share("Plank"), plain.Share("Plank"));
+    }
+
+    [Test]
     public void AssetBuildsTreeAndRolls() {
       var leafA = new TextAsset("a");
       var leafB = new TextAsset("b");
@@ -246,6 +270,29 @@ namespace CascadeRoll.Tests {
       foreach (TextAsset item in r.Items) {
         Assert.IsTrue(item == leafA || item == leafB);
       }
+    }
+
+    [Test]
+    public void InspectorSimulateButtonProducesReport() {
+      var sub = ScriptableObject.CreateInstance<TextTable>();
+      sub.name = "Rare";
+      sub.entries = new[] { new RollTableAsset<TextAsset>.Entry { weight = 1f, item = new TextAsset("spear") } };
+      var root = ScriptableObject.CreateInstance<TextTable>();
+      root.name = "Chest";
+      root.mode = RollMode.Chain;
+      root.entries = new[] {
+        new RollTableAsset<TextAsset>.Entry { weight = 20f, table = sub, tag = "Rare" },
+        new RollTableAsset<TextAsset>.Entry { weight = 100f, item = new TextAsset("tuna"), tag = "Common" },
+      };
+      UnityEditor.Editor editor = UnityEditor.Editor.CreateEditor(root);
+      Assert.IsInstanceOf<CascadeRoll.Editor.RollTableAssetEditor>(editor);
+      string report = (string)typeof(CascadeRoll.Editor.RollTableAssetEditor)
+        .GetMethod("Simulate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+        .Invoke(editor, null);
+      StringAssert.Contains("by tag:", report);
+      StringAssert.Contains("Rare", report);
+      StringAssert.DoesNotContain("Exception", report);
+      Object.DestroyImmediate(editor);
     }
 
     [Test]

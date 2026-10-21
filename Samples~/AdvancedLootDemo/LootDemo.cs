@@ -55,6 +55,8 @@ namespace CascadeRoll.Samples {
     [SerializeField] private int seed = 1;
     [SerializeField] private int containers = 6;
     [SerializeField] private int picksPerContainer = 2;
+    [Tooltip("Rolls for the simulation printed after the containers; 0 skips it.")]
+    [SerializeField] private int simulateRolls = 10000;
 
     private void Start() {
       RollTable<string> root = BuildTree(picksPerContainer);
@@ -63,11 +65,21 @@ namespace CascadeRoll.Samples {
       for (int i = 0; i < containers; i++) {
         RollResult<string> haul = roller.Roll(root, ledger, new SystemRandom(seed * 1000 + i));
         Debug.Log("Container " + (i + 1) + " → " + string.Join(", ", haul.Items) + "\n" + haul);
-        foreach (string item in haul.Items) {
-          ledger.Record(item, TypeOf(item));
-        }
-        ledger.Opens++;
+        Settle(ledger, haul);
       }
+
+      // Measured odds with the ledger fed back: falloff flattens the type mix toward even, the rule shows as one Telescope.
+      if (simulateRolls > 0) {
+        Debug.Log("Simulation\n" + RollSimulator.Run(roller, root, new DemoLedger(), simulateRolls, seed, Settle));
+      }
+    }
+
+    // After a container: count every item and its type, and the open itself.
+    private static void Settle(DemoLedger ledger, RollResult<string> haul) {
+      foreach (string item in haul.Items) {
+        ledger.Record(item, TypeOf(item));
+      }
+      ledger.Opens++;
     }
 
     // Type → item. Weights are the only rarity: Tuna 10 vs Bow 1.
